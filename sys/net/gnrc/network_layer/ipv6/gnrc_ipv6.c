@@ -31,7 +31,7 @@
 
 #include "net/gnrc/ipv6.h"
 
-#define ENABLE_DEBUG    (0)
+#define ENABLE_DEBUG    (1)
 #include "debug.h"
 
 #define _MAX_L2_ADDR_LEN    (8U)
@@ -307,8 +307,10 @@ static int _fill_ipv6_hdr(kernel_pid_t iface, gnrc_pktsnip_t *ipv6,
             ipv6_addr_t *src = gnrc_ipv6_netif_find_best_src_addr(iface, &hdr->dst);
 
             if (src != NULL) {
-                DEBUG("ipv6: set packet source to %s\n",
-                      ipv6_addr_to_str(addr_str, src, sizeof(addr_str)));
+            	if (hdr->nh != 58) {
+            		DEBUG("ipv6: set packet source to %s\n",
+            				ipv6_addr_to_str(addr_str, src, sizeof(addr_str)));
+            	}
                 memcpy(&hdr->src, src, sizeof(ipv6_addr_t));
             }
             /* Otherwise leave unspecified */
@@ -518,6 +520,9 @@ static void _send(gnrc_pktsnip_t *pkt, bool prep_hdr)
     }
     if (ipv6 != pkt) {      /* in case packet has netif header */
         pkt->next = payload;/* pkt is already write-protected so we can do that */
+    }
+    else {
+        pkt = payload;      /* pkt is the IPv6 header so we just write-protected it */
     }
     ipv6 = payload;  /* Reset ipv6 from temporary variable */
 
