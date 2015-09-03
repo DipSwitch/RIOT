@@ -46,9 +46,14 @@ static char _stack[GNRC_IPV6_STACK_SIZE];
 #include "net/fib.h"
 #include "net/fib/table.h"
 /**
+ * @brief buffer to store the entries in the IPv6 forwarding table
+ */
+static fib_entry_t _fib_entries[GNRC_IPV6_FIB_TABLE_SIZE];
+
+/**
  * @brief the IPv6 forwarding table
  */
-fib_entry_t gnrc_ipv6_fib_table[FIB_MAX_FIB_TABLE_ENTRIES];
+fib_table_t gnrc_ipv6_fib_table;
 #endif
 
 #if ENABLE_DEBUG
@@ -80,7 +85,9 @@ kernel_pid_t gnrc_ipv6_init(void)
     }
 
 #ifdef MODULE_FIB
-    fib_init(gnrc_ipv6_fib_table);
+    gnrc_ipv6_fib_table.entries = _fib_entries;
+    gnrc_ipv6_fib_table.size = GNRC_IPV6_FIB_TABLE_SIZE;
+    fib_init(&gnrc_ipv6_fib_table);
 #endif
 
     return gnrc_ipv6_pid;
@@ -183,6 +190,7 @@ static void *_event_loop(void *args)
                 msg_reply(&msg, &reply);
                 break;
 
+#ifdef MODULE_GNRC_NDP
             case GNRC_NDP_MSG_RTR_TIMEOUT:
                 DEBUG("ipv6: Router timeout received\n");
                 ((gnrc_ipv6_nc_t *)msg.content.ptr)->flags &= ~GNRC_IPV6_NC_IS_ROUTER;
@@ -194,7 +202,6 @@ static void *_event_loop(void *args)
                                             (ipv6_addr_t *)msg.content.ptr);
                 break;
 
-#ifdef MODULE_GNRC_NDP
             case GNRC_NDP_MSG_NBR_SOL_RETRANS:
                 DEBUG("ipv6: Neigbor solicitation retransmission timer event received\n");
                 gnrc_ndp_retrans_nbr_sol((gnrc_ipv6_nc_t *)msg.content.ptr);
@@ -203,6 +210,22 @@ static void *_event_loop(void *args)
             case GNRC_NDP_MSG_NC_STATE_TIMEOUT:
                 DEBUG("ipv6: Neigbor cache state timeout received\n");
                 gnrc_ndp_state_timeout((gnrc_ipv6_nc_t *)msg.content.ptr);
+                break;
+#endif
+#ifdef MODULE_GNRC_NDP_ROUTER
+            case GNRC_NDP_MSG_RTR_ADV_RETRANS:
+                DEBUG("ipv6: Router advertisement retransmission event received\n");
+                gnrc_ndp_router_retrans_rtr_adv((gnrc_ipv6_netif_t *)msg.content.ptr);
+                break;
+            case GNRC_NDP_MSG_RTR_ADV_DELAY:
+                DEBUG("ipv6: Delayed router advertisement event received\n");
+                gnrc_ndp_router_send_rtr_adv((gnrc_ipv6_nc_t *)msg.content.ptr);
+                break;
+#endif
+#ifdef MODULE_GNRC_NDP_HOST
+            case GNRC_NDP_MSG_RTR_SOL_RETRANS:
+                DEBUG("ipv6: Router solicitation retransmission event received\n");
+                gnrc_ndp_host_retrans_rtr_sol((gnrc_ipv6_netif_t *)msg.content.ptr);
                 break;
 #endif
 
