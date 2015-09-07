@@ -203,15 +203,6 @@ endif
 
 ifneq (,$(filter newlib,$(USEMODULE)))
   USEMODULE += uart_stdio
-else
-  ifneq (,$(filter shell,$(USEMODULE)))
-    USEMODULE += uart0
-  endif
-endif
-
-
-ifneq (,$(filter uart0,$(USEMODULE)))
-  USEMODULE += posix
 endif
 
 ifneq (,$(filter posix,$(USEMODULE)))
@@ -276,6 +267,19 @@ ifneq (,$(filter gnrc,$(USEMODULE)))
   USEMODULE += gnrc_pktbuf
 endif
 
+ifneq (,$(filter gnrc_netdev2,$(USEMODULE)))
+  USEMODULE += netopt
+endif
+
 ifneq (,$(filter hih6130,$(USEMODULE)))
   USEMODULE += vtimer
+endif
+
+ifneq (,$(filter encx24j600,$(USEMODULE)))
+  USEMODULE += timex
+  USEMODULE += vtimer
+endif
+
+ifneq (,$(filter srf02,$(USEMODULE)))
+  USEMODULE += xtimer
 endif
