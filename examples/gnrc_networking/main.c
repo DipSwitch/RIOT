@@ -20,8 +20,11 @@
 
 #include <stdio.h>
 
+#include "coap.h"
+
 #include "shell.h"
 
+extern int coap_main(void);
 extern int udp_cmd(int argc, char **argv);
 
 static const shell_command_t shell_commands[] = {
@@ -31,6 +34,8 @@ static const shell_command_t shell_commands[] = {
 
 int main(void)
 {
+    coap_main();
+
     puts("RIOT network stack example application");
 
     /* start shell */

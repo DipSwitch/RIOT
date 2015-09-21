@@ -38,6 +38,8 @@ USEMODULE += ps
 # development process:
 CFLAGS += -DDEVELHELP
 
+USEPKG += microcoap
+
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
