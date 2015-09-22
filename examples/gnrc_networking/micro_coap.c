@@ -31,11 +31,41 @@
 #define ENABLE_DEBUG                (1)
 #include "debug.h"
 
+#if MODULE_MICROCOAP
+
 #define COAP_LISTEN_PORT            5683
 #define BUFSZ                       128
 
 static void *_microcoap_server_thread(void *arg);
 static void _coap_send(gnrc_pktsnip_t *buf, size_t len, udp_hdr_t *src_udp, ipv6_hdr_t *src_ip);
+
+#define MAX_RESPONSE_LEN 1500
+static uint8_t response[MAX_RESPONSE_LEN] = "";
+
+static const coap_endpoint_path_t path = {2, {"foo", "bar"}};
+
+void create_response_payload(const uint8_t *buffer)
+{
+    char *response = "1337";
+    memcpy((void*)buffer, response, strlen(response));
+}
+
+static int handle_get_response(coap_rw_buffer_t *scratch, const coap
+/* The handler which handles the path /foo/bar */
+static int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt, uint8_t id_hi, uint8_t id_lo)
+{
+    DEBUG("[endpoints]  %s()\n",  __func__);
+    create_response_payload(response);
+    /* NOTE: COAP_RSPCODE_CONTENT only works in a packet answering a GET. */
+    return coap_make_response(scratch, outpkt, response, strlen((char*)response),
+                              id_hi, id_lo, &inpkt->tok, COAP_RSPCODE_CONTENT, COAP_CONTENTTYPE_TEXT_PLAIN);
+}
+
+const coap_endpoint_t endpoints[] =
+{
+    {COAP_METHOD_GET, handle_get_response, &path, "ct=0"},
+    {(coap_method_t)0, NULL, NULL, NULL} /* marks the end of the endpoints array */
+};
 
 char _rcv_stack_buf[THREAD_STACKSIZE_DEFAULT];
 
@@ -79,10 +109,10 @@ static void *_microcoap_server_thread(void *arg)
     }
 
     for (;;) {
-
         msg_receive(&msg);
 
         if (msg.type != GNRC_NETAPI_MSG_TYPE_RCV) {
+            msg_send_to_self(&msg);         /* return the message to the queue */
             continue;
         }
 
@@ -90,19 +120,17 @@ static void *_microcoap_server_thread(void *arg)
         udp_hdr_t *udp = pckt->next->data;
         ipv6_hdr_t *ipv6 = pckt->next->next->data;
 
-        printf("Received packet: ");
         coap_dump(pckt->data, pckt->size, true);
-        puts("\n");
 
         rc = coap_parse(&pkt, pckt->data, pckt->size);
         if (rc != 0) {
             printf("Bad packet rc=%d\n", rc);
         }
         else {
-            gnrc_pktsnip_t *outbuf = gnrc_pktbuf_add(NULL, NULL, 1028, GNRC_NETTYPE_UNDEF);
             uint8_t dat_buffer[256];
-            //coap_rw_buffer_t scratch_buf = { (uint8_t*)outbuf->data, outbuf->size };
             coap_rw_buffer_t scratch_buf = { dat_buffer, sizeof(dat_buffer) };
+
+            gnrc_pktsnip_t *outbuf = gnrc_pktbuf_add(NULL, NULL, 1028, GNRC_NETTYPE_UNDEF);
 
             if (!outbuf) {
                 /* TODO couldn't allocate output buffer */
@@ -112,7 +140,6 @@ static void *_microcoap_server_thread(void *arg)
             coap_packet_t rsppkt;
             size_t rsplen = outbuf->size;
 
-            printf("\ncontent: ");
             coap_dumpPacket(&pkt);
             coap_handle_req(&scratch_buf, &pkt, &rsppkt);
 
@@ -120,10 +147,7 @@ static void *_microcoap_server_thread(void *arg)
                 printf("coap_build failed rc=%d\n", rc);
             }
             else {
-                printf("\nSending packet: ");
                 coap_dump(outbuf->data, rsplen, true);
-                puts("\n");
-                printf("content:\n");
                 coap_dumpPacket(&rsppkt);
                 _coap_send(outbuf, rsplen, udp, ipv6);
             }
@@ -169,3 +193,5 @@ void _coap_send(gnrc_pktsnip_t *buf, size_t len, udp_hdr_t *src_udp, ipv6_hdr_t 
         return;
     }
 }
+
+#endif

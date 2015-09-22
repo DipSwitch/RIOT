@@ -1,6 +1,6 @@
 PKG_NAME=microcoap
-PKG_URL=git://github.com/1248/microcoap.git
-PKG_VERSION=9cb1dcda2182a8dca8483b230cda8b591a924c82
+PKG_URL=git://github.com/dipswitch/microcoap.git
+#PKG_VERSION=9cb1dcda2182a8dca8483b230cda8b591a924c82
 PKG_DIR=$(CURDIR)/$(PKG_NAME)
 
 ifneq ($(RIOTBOARD),)
@@ -24,7 +24,7 @@ $(PKG_DIR)/Makefile: $(PKG_DIR)/.git/config
 
 $(PKG_DIR)/.git/config:
 	test -d "$(PKG_DIR)" || git clone "$(PKG_URL)" "$(PKG_DIR)"; \
-		cd "$(PKG_DIR)" && git checkout -f "$(PKG_VERSION)"
+		[ -z "$(PKG_VERSION)" ] || cd "$(PKG_DIR)" && git checkout -f "$(PKG_VERSION)"
 
 clean::
 	@echo "Cleaning up $(PKG_NAME) package..."
