@@ -38,11 +38,51 @@
 
 static void *_microcoap_server_thread(void *arg);
 static void _coap_send(gnrc_pktsnip_t *buf, size_t len, udp_hdr_t *src_udp, ipv6_hdr_t *src_ip);
+static int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
 
 #define MAX_RESPONSE_LEN 1500
 static uint8_t response[MAX_RESPONSE_LEN] = "";
 
-static const coap_endpoint_path_t path = {2, {"foo", "bar"}};
+static const coap_endpoint_path_t path1 = PATH_ELEMENT2(foo1, bar1);
+static const coap_endpoint_path_t path2 = PATH_ELEMENT2(foo2, bar2);
+static const coap_endpoint_path_t path3 = PATH_ELEMENT2(foo3, bar3);
+static const coap_endpoint_path_t path4 = PATH_ELEMENT2(foo4, bar4);
+static const coap_endpoint_path_t path5 = PATH_ELEMENT2(foo5, bar5);
+static const coap_endpoint_path_t path6 = PATH_ELEMENT2(foo6, bar6);
+static const coap_endpoint_path_t path7 = PATH_ELEMENT2(foo7, bar7);
+static const coap_endpoint_path_t path8 = PATH_ELEMENT2(foo8, bar8);
+
+static const coap_endpoint_path_t path11 = PATH_ELEMENT2(foo1, bar2);
+static const coap_endpoint_path_t path12 = PATH_ELEMENT2(foo2, bar3);
+static const coap_endpoint_path_t path13 = PATH_ELEMENT2(foo3, bar4);
+static const coap_endpoint_path_t path14 = PATH_ELEMENT2(foo4, bar5);
+static const coap_endpoint_path_t path15 = PATH_ELEMENT2(foo5, bar6);
+static const coap_endpoint_path_t path16 = PATH_ELEMENT2(foo6, bar7);
+static const coap_endpoint_path_t path17 = PATH_ELEMENT2(foo7, bar8);
+static const coap_endpoint_path_t path18 = PATH_ELEMENT2(foo8, bar9);
+
+const coap_endpoint_t endpoints[] =
+{
+        { COAP_METHOD_GET, handle_get_response, &path1, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path2, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_GET, handle_get_response, &path3, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path4, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_GET, handle_get_response, &path5, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path6, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_GET, handle_get_response, &path7, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path8, COAP_CONTENTTYPE_TEXT_PLAIN },
+
+        { COAP_METHOD_GET, handle_get_response, &path11, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path12, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_GET, handle_get_response, &path13, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path14, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_GET, handle_get_response, &path15, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path16, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_GET, handle_get_response, &path17, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_POST, handle_get_response, &path18, COAP_CONTENTTYPE_TEXT_PLAIN },
+
+    { (coap_method_t)0, NULL, NULL, COAP_CONTENTTYPE_NONE } /* marks the end of the endpoints array */
+};
 
 void create_response_payload(const uint8_t *buffer)
 {
@@ -50,22 +90,15 @@ void create_response_payload(const uint8_t *buffer)
     memcpy((void*)buffer, response, strlen(response));
 }
 
-static int handle_get_response(coap_rw_buffer_t *scratch, const coap
 /* The handler which handles the path /foo/bar */
-static int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt, uint8_t id_hi, uint8_t id_lo)
+int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt)
 {
     DEBUG("[endpoints]  %s()\n",  __func__);
     create_response_payload(response);
     /* NOTE: COAP_RSPCODE_CONTENT only works in a packet answering a GET. */
     return coap_make_response(scratch, outpkt, response, strlen((char*)response),
-                              id_hi, id_lo, &inpkt->tok, COAP_RSPCODE_CONTENT, COAP_CONTENTTYPE_TEXT_PLAIN);
+                              inpkt, COAP_RSPCODE_CONTENT, COAP_CONTENTTYPE_TEXT_PLAIN, COAP_TYPE_ACK);
 }
-
-const coap_endpoint_t endpoints[] =
-{
-    {COAP_METHOD_GET, handle_get_response, &path, "ct=0"},
-    {(coap_method_t)0, NULL, NULL, NULL} /* marks the end of the endpoints array */
-};
 
 char _rcv_stack_buf[THREAD_STACKSIZE_DEFAULT];
 
@@ -120,38 +153,33 @@ static void *_microcoap_server_thread(void *arg)
         udp_hdr_t *udp = pckt->next->data;
         ipv6_hdr_t *ipv6 = pckt->next->next->data;
 
-        coap_dump(pckt->data, pckt->size, true);
-
         rc = coap_parse(&pkt, pckt->data, pckt->size);
-        if (rc != 0) {
+        if (rc) {
             printf("Bad packet rc=%d\n", rc);
+            continue;
         }
-        else {
-            uint8_t dat_buffer[256];
-            coap_rw_buffer_t scratch_buf = { dat_buffer, sizeof(dat_buffer) };
 
-            gnrc_pktsnip_t *outbuf = gnrc_pktbuf_add(NULL, NULL, 1028, GNRC_NETTYPE_UNDEF);
+        uint8_t dat_buffer[256];
+        coap_rw_buffer_t scratch_buf = { dat_buffer, sizeof(dat_buffer) };
 
-            if (!outbuf) {
-                /* TODO couldn't allocate output buffer */
-                continue;
-            }
+        gnrc_pktsnip_t *outbuf = gnrc_pktbuf_add(NULL, NULL, 1028, GNRC_NETTYPE_UNDEF);
 
-            coap_packet_t rsppkt;
-            size_t rsplen = outbuf->size;
-
-            coap_dumpPacket(&pkt);
-            coap_handle_req(&scratch_buf, &pkt, &rsppkt);
-
-            if (0 != (rc = coap_build(outbuf->data, &rsplen, &rsppkt))) {
-                printf("coap_build failed rc=%d\n", rc);
-            }
-            else {
-                coap_dump(outbuf->data, rsplen, true);
-                coap_dumpPacket(&rsppkt);
-                _coap_send(outbuf, rsplen, udp, ipv6);
-            }
+        if (!outbuf) {
+            /* TODO couldn't allocate output buffer */
+            continue;
         }
+
+        coap_packet_t rsppkt;
+        size_t rsplen = outbuf->size;
+
+        coap_handle_req(&scratch_buf, &pkt, &rsppkt);
+        rc = coap_build(outbuf->data, &rsplen, &rsppkt);
+        if (rc) {
+            printf("coap_build failed rc=%d\n", rc);
+            continue;
+        }
+
+        _coap_send(outbuf, rsplen, udp, ipv6);
     }
 
     return NULL;
