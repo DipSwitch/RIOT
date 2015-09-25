@@ -40,7 +40,7 @@ static void *_microcoap_server_thread(void *arg);
 static void _coap_send(gnrc_pktsnip_t *buf, size_t len, udp_hdr_t *src_udp, ipv6_hdr_t *src_ip);
 static int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
 
-#define MAX_RESPONSE_LEN 1500
+#define MAX_RESPONSE_LEN                    500
 static uint8_t response[MAX_RESPONSE_LEN] = "";
 
 static const coap_endpoint_path_t str_ep1 = PATH_ELEMENT2(AxAvior String EP1, axav, str_ep1);
@@ -57,66 +57,28 @@ static const coap_endpoint_path_t bin_ep5 = PATH_ELEMENT2(AxAvior Binary EP5, ax
 const coap_endpoint_t endpoints[] =
 {
         // AxAvior String Endpoint 1
-        { COAP_METHOD_GET,      handle_get_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_POST,     handle_get_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_PUT,      handle_get_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_DELETE,   handle_get_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
-
+        { COAP_METHOD_ALL,      handle_get_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 2
-        { COAP_METHOD_GET,      handle_get_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_POST,     handle_get_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_PUT,      handle_get_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_DELETE,   handle_get_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
-
+        { COAP_METHOD_ALL,      handle_get_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 3
-        { COAP_METHOD_GET,      handle_get_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_POST,     handle_get_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_PUT,      handle_get_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_DELETE,   handle_get_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
-
+        { COAP_METHOD_ALL,      handle_get_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 4
-        { COAP_METHOD_GET,      handle_get_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_POST,     handle_get_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_PUT,      handle_get_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_DELETE,   handle_get_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
-
+        { COAP_METHOD_ALL,      handle_get_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 5
-        { COAP_METHOD_GET,      handle_get_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_POST,     handle_get_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_PUT,      handle_get_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
-        { COAP_METHOD_DELETE,   handle_get_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
-
+        { COAP_METHOD_ALL,      handle_get_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior Binary Endpoint 1
-        { COAP_METHOD_GET,      handle_get_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_POST,     handle_get_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_PUT,      handle_get_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_DELETE,   handle_get_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-
+        { COAP_METHOD_ALL,      handle_get_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 2
-        { COAP_METHOD_GET,      handle_get_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_POST,     handle_get_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_PUT,      handle_get_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_DELETE,   handle_get_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-
+        { COAP_METHOD_ALL,      handle_get_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 3
-        { COAP_METHOD_GET,      handle_get_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_POST,     handle_get_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_PUT,      handle_get_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_DELETE,   handle_get_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-
+        { COAP_METHOD_ALL,      handle_get_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 4
-        { COAP_METHOD_GET,      handle_get_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_POST,     handle_get_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_PUT,      handle_get_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_DELETE,   handle_get_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-
+        { COAP_METHOD_ALL,      handle_get_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 5
-        { COAP_METHOD_GET,      handle_get_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_POST,     handle_get_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_PUT,      handle_get_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
-        { COAP_METHOD_DELETE,   handle_get_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_get_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
 
-        { (coap_method_t)0, NULL, NULL, COAP_CONTENTTYPE_NONE } /* marks the end of the endpoints array */
+        // marks the end of the endpoints array
+        { (coap_method_t)0, NULL, NULL, COAP_CONTENTTYPE_NONE }
 };
 
 void create_response_payload(const uint8_t *buffer)
@@ -143,8 +105,6 @@ int coap_main(void)
 {
 
     DEBUG("Starting example microcoap server...\n");
-
-    //msg_init_queue(msg_q, RCV_MSG_Q_SIZE);
 
     thread_create(_rcv_stack_buf, sizeof(_rcv_stack_buf), THREAD_PRIORITY_MAIN - 2,
                   CREATE_STACKTEST, _microcoap_server_thread, NULL ,"_microcoap_server_thread");
@@ -184,6 +144,8 @@ static void *_microcoap_server_thread(void *arg)
             continue;
         }
 
+        printf("start processing request\n");
+
         gnrc_pktsnip_t *pckt = (gnrc_pktsnip_t*)msg.content.ptr;
         udp_hdr_t *udp = pckt->next->data;
         ipv6_hdr_t *ipv6 = pckt->next->next->data;
@@ -200,7 +162,7 @@ static void *_microcoap_server_thread(void *arg)
         gnrc_pktsnip_t *outbuf = gnrc_pktbuf_add(NULL, NULL, 1028, GNRC_NETTYPE_UNDEF);
 
         if (!outbuf) {
-            /* TODO couldn't allocate output buffer */
+            printf("error: failed to allocate all packets\n");
             continue;
         }
 
@@ -215,6 +177,8 @@ static void *_microcoap_server_thread(void *arg)
         }
 
         _coap_send(outbuf, rsplen, udp, ipv6);
+
+        printf("end processing request\n");
     }
 
     return NULL;
