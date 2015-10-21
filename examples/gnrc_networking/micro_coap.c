@@ -38,7 +38,14 @@
 
 static void *_microcoap_server_thread(void *arg);
 static void _coap_send(gnrc_pktsnip_t *buf, size_t len, udp_hdr_t *src_udp, ipv6_hdr_t *src_ip);
-static int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
+static int handle_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt, coap_method_t method, const coap_endpoint_t *endpoint, void *args);
+
+typedef struct
+{
+    coap_endpoint_request request;
+} coap_context_t;
+
+static coap_context_t context;
 
 #define MAX_RESPONSE_LEN                    500
 static uint8_t response[MAX_RESPONSE_LEN] = "";
@@ -54,60 +61,90 @@ static const coap_endpoint_path_t bin_ep3 = PATH_ELEMENT2(AxAvior Binary EP3, ax
 static const coap_endpoint_path_t bin_ep4 = PATH_ELEMENT2(AxAvior Binary EP4, axav, bin_ep4);
 static const coap_endpoint_path_t bin_ep5 = PATH_ELEMENT2(AxAvior Binary EP5, axav, bin_ep5);
 
+char _rcv_stack_buf[THREAD_STACKSIZE_DEFAULT];
+
 const coap_endpoint_t endpoints[] =
 {
         // AxAvior String Endpoint 1
-        { COAP_METHOD_ALL,      handle_get_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 2
-        { COAP_METHOD_ALL,      handle_get_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 3
-        { COAP_METHOD_ALL,      handle_get_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 4
-        { COAP_METHOD_ALL,      handle_get_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 5
-        { COAP_METHOD_ALL,      handle_get_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior Binary Endpoint 1
-        { COAP_METHOD_ALL,      handle_get_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 2
-        { COAP_METHOD_ALL,      handle_get_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 3
-        { COAP_METHOD_ALL,      handle_get_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 4
-        { COAP_METHOD_ALL,      handle_get_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 5
-        { COAP_METHOD_ALL,      handle_get_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
 
         // marks the end of the endpoints array
         { (coap_method_t)0, NULL, NULL, COAP_CONTENTTYPE_NONE }
 };
 
-void create_response_payload(const uint8_t *buffer)
-{
-    char *response = "1337";
-    memcpy((void*)buffer, response, strlen(response));
-}
+#if 0
+#define COAP_MSG_OBSERVE_TIMER              31337
+static msg_t _observe_timer;
+static int _coap_observe_counter;
+static const coap_packet_t _observe_req;
+static coap_endpoint_t *_observe_endpoint;
+#endif
 
 /* The handler which handles the path /foo/bar */
-int handle_get_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt)
+int handle_response(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt, coap_method_t method, const coap_endpoint_t *endpoint, void *arg)
 {
+#if 0
+    uint8_t count;
+    const coap_option_t *opt;
+#endif
+    coap_responsecode_t respcode;
+    coap_context_t *ctxt = (coap_context_t*)arg;
+
     DEBUG("[endpoints]  %s()\n",  __func__);
-    create_response_payload(response);
-    /* NOTE: COAP_RSPCODE_CONTENT only works in a packet answering a GET. */
-    return coap_make_response(scratch, outpkt, response, strlen((char*)response),
-                              inpkt, COAP_RSPCODE_CONTENT, COAP_CONTENTTYPE_TEXT_PLAIN, COAP_TYPE_ACK);
+
+#if 0
+    // check and validate the observe option
+    opt = coap_findOptions(inpkt, COAP_OPTION_OBSERVE, &count);
+    if (opt)
+    {
+        if (!opt->buf.len)
+        {
+            // check if we have a token
+            if (!inpkt->tok.len)
+                return COAP_ERR_TOKEN_TOO_SHORT;
+
+            // add to observer list
+            memcpy(&_observe_req, inpkt, sizeof(_observe_req));
+            _observe_timer.sender_pid = thread_getpid();
+            _observe_timer.type = COAP_MSG_OBSERVE_TIMER;
+            xtimer_msg_receive_timeout(_observe_timer, 2000000);
+        }
+        else
+            return COAP_ERR_OPTION_LEN_INVALID;
+    }
+#endif
+
+    size_t length = inpkt->payload.len;
+    memcpy(response, inpkt->payload.p, inpkt->payload.len);
+    respcode = ctxt->request(method, endpoint->path->elems[endpoint->path->count - 1].str, response, &length, sizeof(response));
+    return coap_make_response(scratch, outpkt, response, length, inpkt, respcode, endpoint->core_attr, COAP_TYPE_ACK);
 }
 
-char _rcv_stack_buf[THREAD_STACKSIZE_DEFAULT];
-
-int sock_rcv, if_id;
-
-int coap_main(void)
+int coap_main(coap_endpoint_request request)
 {
-
     DEBUG("Starting example microcoap server...\n");
 
+    context.request = request;
     thread_create(_rcv_stack_buf, sizeof(_rcv_stack_buf), THREAD_PRIORITY_MAIN - 2,
-                  CREATE_STACKTEST, _microcoap_server_thread, NULL ,"_microcoap_server_thread");
+                  CREATE_STACKTEST, _microcoap_server_thread, &context,"_microcoap_server_thread");
 
     DEBUG("Ready to receive requests.\n");
 
@@ -139,8 +176,35 @@ static void *_microcoap_server_thread(void *arg)
     for (;;) {
         msg_receive(&msg);
 
+#if 0
+        if (msg.type == COAP_MSG_OBSERVE_TIMER) {
+            size_t resplen;
+            coap_packet_t packet;
+            coap_rw_buffer_t *scratch;
+            coap_responsecode_t respcode;
+
+            // resent the CoAP response
+            int length = create_response_payload(response, COAP_METHOD_GET, &respcode);
+            coap_make_response(scratch, &packet, response, length, &_observe_req, respcode, _observe_endpoint->core_attr, COAP_TYPE_ACK);
+            rc = coap_build(packet->data, &rsplen, &packet);
+            if (rc) {
+                printf("coap_build failed rc=%d\n", rc);
+                continue;
+            }
+
+            _coap_send(outbuf, rsplen, udp, ipv6);
+
+            // add to observer list
+            _observe_timer.sender_pid = thread_getpid();
+            _observe_timer.type = COAP_MSG_OBSERVE_TIMER;
+            xtimer_msg_receive_timeout(_observe_timer, 2000000);
+        }
+        else
+#endif
         if (msg.type != GNRC_NETAPI_MSG_TYPE_RCV) {
+#if 0
             msg_send_to_self(&msg);         /* return the message to the queue */
+#endif
             continue;
         }
 
@@ -169,7 +233,7 @@ static void *_microcoap_server_thread(void *arg)
         coap_packet_t rsppkt;
         size_t rsplen = outbuf->size;
 
-        coap_handle_req(&scratch_buf, &pkt, &rsppkt);
+        coap_handle_req(&scratch_buf, &pkt, &rsppkt, arg);
         rc = coap_build(outbuf->data, &rsplen, &rsppkt);
         if (rc) {
             printf("coap_build failed rc=%d\n", rc);
