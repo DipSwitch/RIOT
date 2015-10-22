@@ -247,8 +247,6 @@ static void *_microcoap_server_thread(void *arg)
             continue;
         }
 
-        printf("start processing request\n");
-
         gnrc_pktsnip_t *pckt = (gnrc_pktsnip_t*)msg.content.ptr;
         udp_hdr_t *udp = pckt->next->data;
         ipv6_hdr_t *ipv6 = pckt->next->next->data;
@@ -280,8 +278,6 @@ static void *_microcoap_server_thread(void *arg)
         }
 
         _coap_send(outbuf, rsplen, udp, ipv6);
-
-        printf("end processing request\n");
     }
 
     return NULL;
