@@ -58,13 +58,24 @@ static const char *_coap_method_translate(coap_method_t method)
 
 coap_responsecode_t create_response_payload(coap_method_t method, const char *name, uint8_t *value, size_t *len, size_t max_len)
 {
+    // calculate all sizes and get all strings
     const char *mthd = _coap_method_translate(method);
+    int offset = snprintf(NULL, 0, "%s|%s|%d|", name, mthd, *len);
 
-    int offset = sprintf(NULL, "%s|%s|%d|", name, mthd, *len);
+    // check if the input isn't to long
+    if (offset + *len > max_len)
+        return COAP_RSPCODE_INTERNAL_SERVER_ERROR;
+
+    // prepare the serial string
     memcpy(value + offset, value, *len);
-    snprintf((char*)value, max_len, "%s|%s|%d|", name, mthd, *len);
+    snprintf((char*)value, offset, "%s|%s|%d|", name, mthd, *len);
+    *(value + offset - 1) = '|';
     *len += offset;
 
+    // TODO send the data to the data USART
+    // TODO receive data back from the USART
+
+    // return with the proper response code
     switch (method)
     {
     case COAP_METHOD_GET:

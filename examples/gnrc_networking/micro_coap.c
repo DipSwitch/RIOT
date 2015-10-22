@@ -50,41 +50,73 @@ static coap_context_t context;
 #define MAX_RESPONSE_LEN                    500
 static uint8_t response[MAX_RESPONSE_LEN] = "";
 
-static const coap_endpoint_path_t str_ep1 = PATH_ELEMENT2(AxAvior String EP1, axav, str_ep1);
-static const coap_endpoint_path_t str_ep2 = PATH_ELEMENT2(AxAvior String EP2, axav, str_ep2);
-static const coap_endpoint_path_t str_ep3 = PATH_ELEMENT2(AxAvior String EP3, axav, str_ep3);
-static const coap_endpoint_path_t str_ep4 = PATH_ELEMENT2(AxAvior String EP4, axav, str_ep4);
-static const coap_endpoint_path_t str_ep5 = PATH_ELEMENT2(AxAvior String EP5, axav, str_ep5);
-static const coap_endpoint_path_t bin_ep1 = PATH_ELEMENT2(AxAvior Binary EP1, axav, bin_ep1);
-static const coap_endpoint_path_t bin_ep2 = PATH_ELEMENT2(AxAvior Binary EP2, axav, bin_ep2);
-static const coap_endpoint_path_t bin_ep3 = PATH_ELEMENT2(AxAvior Binary EP3, axav, bin_ep3);
-static const coap_endpoint_path_t bin_ep4 = PATH_ELEMENT2(AxAvior Binary EP4, axav, bin_ep4);
-static const coap_endpoint_path_t bin_ep5 = PATH_ELEMENT2(AxAvior Binary EP5, axav, bin_ep5);
+static const coap_endpoint_path_t str_ep01 = PATH_ELEMENT2(AxAvior String EP1, axav, str_ep01);
+static const coap_endpoint_path_t str_ep02 = PATH_ELEMENT2(AxAvior String EP2, axav, str_ep02);
+static const coap_endpoint_path_t str_ep03 = PATH_ELEMENT2(AxAvior String EP3, axav, str_ep03);
+static const coap_endpoint_path_t str_ep04 = PATH_ELEMENT2(AxAvior String EP4, axav, str_ep04);
+static const coap_endpoint_path_t str_ep05 = PATH_ELEMENT2(AxAvior String EP5, axav, str_ep05);
+static const coap_endpoint_path_t str_ep06 = PATH_ELEMENT2(AxAvior String EP6, axav, str_ep06);
+static const coap_endpoint_path_t str_ep07 = PATH_ELEMENT2(AxAvior String EP7, axav, str_ep07);
+static const coap_endpoint_path_t str_ep08 = PATH_ELEMENT2(AxAvior String EP8, axav, str_ep08);
+static const coap_endpoint_path_t str_ep09 = PATH_ELEMENT2(AxAvior String EP9, axav, str_ep09);
+static const coap_endpoint_path_t str_ep10 = PATH_ELEMENT2(AxAvior String EP10, axav, str_ep10);
+
+static const coap_endpoint_path_t bin_ep01 = PATH_ELEMENT2(AxAvior Binary EP1, axav, bin_ep01);
+static const coap_endpoint_path_t bin_ep02 = PATH_ELEMENT2(AxAvior Binary EP2, axav, bin_ep02);
+static const coap_endpoint_path_t bin_ep03 = PATH_ELEMENT2(AxAvior Binary EP3, axav, bin_ep03);
+static const coap_endpoint_path_t bin_ep04 = PATH_ELEMENT2(AxAvior Binary EP4, axav, bin_ep04);
+static const coap_endpoint_path_t bin_ep05 = PATH_ELEMENT2(AxAvior Binary EP5, axav, bin_ep05);
+static const coap_endpoint_path_t bin_ep06 = PATH_ELEMENT2(AxAvior Binary EP6, axav, bin_ep06);
+static const coap_endpoint_path_t bin_ep07 = PATH_ELEMENT2(AxAvior Binary EP7, axav, bin_ep07);
+static const coap_endpoint_path_t bin_ep08 = PATH_ELEMENT2(AxAvior Binary EP8, axav, bin_ep08);
+static const coap_endpoint_path_t bin_ep09 = PATH_ELEMENT2(AxAvior Binary EP9, axav, bin_ep09);
+static const coap_endpoint_path_t bin_ep10 = PATH_ELEMENT2(AxAvior Binary EP10, axav, bin_ep10);
 
 char _rcv_stack_buf[THREAD_STACKSIZE_DEFAULT];
 
 const coap_endpoint_t endpoints[] =
 {
         // AxAvior String Endpoint 1
-        { COAP_METHOD_ALL,      handle_response, &str_ep1, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep01, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 2
-        { COAP_METHOD_ALL,      handle_response, &str_ep2, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep02, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 3
-        { COAP_METHOD_ALL,      handle_response, &str_ep3, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep03, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 4
-        { COAP_METHOD_ALL,      handle_response, &str_ep4, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep04, COAP_CONTENTTYPE_TEXT_PLAIN },
         // AxAvior String Endpoint 5
-        { COAP_METHOD_ALL,      handle_response, &str_ep5, COAP_CONTENTTYPE_TEXT_PLAIN },
+        { COAP_METHOD_ALL,      handle_response, &str_ep05, COAP_CONTENTTYPE_TEXT_PLAIN },
+        // AxAvior String Endpoint 6
+        { COAP_METHOD_ALL,      handle_response, &str_ep06, COAP_CONTENTTYPE_TEXT_PLAIN },
+        // AxAvior String Endpoint 7
+        { COAP_METHOD_ALL,      handle_response, &str_ep07, COAP_CONTENTTYPE_TEXT_PLAIN },
+        // AxAvior String Endpoint 8
+        { COAP_METHOD_ALL,      handle_response, &str_ep08, COAP_CONTENTTYPE_TEXT_PLAIN },
+        // AxAvior String Endpoint 9
+        { COAP_METHOD_ALL,      handle_response, &str_ep09, COAP_CONTENTTYPE_TEXT_PLAIN },
+        // AxAvior String Endpoint 10
+        { COAP_METHOD_ALL,      handle_response, &str_ep10, COAP_CONTENTTYPE_TEXT_PLAIN },
+
         // AxAvior Binary Endpoint 1
-        { COAP_METHOD_ALL,      handle_response, &bin_ep1, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep01, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 2
-        { COAP_METHOD_ALL,      handle_response, &bin_ep2, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep02, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 3
-        { COAP_METHOD_ALL,      handle_response, &bin_ep3, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep03, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 4
-        { COAP_METHOD_ALL,      handle_response, &bin_ep4, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep04, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
         // AxAvior Binary Endpoint 5
-        { COAP_METHOD_ALL,      handle_response, &bin_ep5, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        { COAP_METHOD_ALL,      handle_response, &bin_ep05, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        // AxAvior Binary Endpoint 6
+        { COAP_METHOD_ALL,      handle_response, &bin_ep06, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        // AxAvior Binary Endpoint 7
+        { COAP_METHOD_ALL,      handle_response, &bin_ep07, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        // AxAvior Binary Endpoint 8
+        { COAP_METHOD_ALL,      handle_response, &bin_ep08, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        // AxAvior Binary Endpoint 9
+        { COAP_METHOD_ALL,      handle_response, &bin_ep09, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
+        // AxAvior Binary Endpoint 10
+        { COAP_METHOD_ALL,      handle_response, &bin_ep10, COAP_CONTENTTYPE_APPLICATION_OCT_STREAM },
 
         // marks the end of the endpoints array
         { (coap_method_t)0, NULL, NULL, COAP_CONTENTTYPE_NONE }
