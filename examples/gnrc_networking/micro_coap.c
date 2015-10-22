@@ -183,6 +183,9 @@ int coap_main(coap_endpoint_request request)
     return 0;
 }
 
+#define COAP_QUEUE_SIZE     (8)
+static msg_t _coap_msg_queue[COAP_QUEUE_SIZE];
+
 static void *_microcoap_server_thread(void *arg)
 {
     int rc;
@@ -190,6 +193,10 @@ static void *_microcoap_server_thread(void *arg)
     coap_packet_t pkt;
 
     (void) arg;
+
+    /* we need a message queue for the thread running the shell in order to
+     * receive potentially fast incoming networking packets */
+    msg_init_queue(_coap_msg_queue, COAP_QUEUE_SIZE);
 
     puts("initializing receive socket...");
 
