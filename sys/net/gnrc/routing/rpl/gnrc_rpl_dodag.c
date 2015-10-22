@@ -40,6 +40,13 @@ static void _rpl_trickle_send_dio(void *args)
 {
     gnrc_rpl_dodag_t *dodag = (gnrc_rpl_dodag_t *) args;
     ipv6_addr_t all_RPL_nodes = GNRC_RPL_ALL_NODES_ADDR;
+
+    /* a leaf node does not send DIOs periodically */
+    if (dodag->node_status == GNRC_RPL_LEAF_NODE) {
+        trickle_stop(&dodag->trickle);
+        return;
+    }
+
     gnrc_rpl_send_DIO(dodag, &all_RPL_nodes);
     DEBUG("trickle callback: Instance (%d) | DODAG: (%s)\n", dodag->instance->id,
             ipv6_addr_to_str(addr_str,&dodag->dodag_id, sizeof(addr_str)));
@@ -267,9 +274,9 @@ bool gnrc_rpl_parent_add_by_addr(gnrc_rpl_dodag_t *dodag, ipv6_addr_t *addr, gnr
                 return false;
             }
             if (fib_add_entry(&gnrc_ipv6_fib_table, if_id, def.u8,
-                              sizeof(ipv6_addr_t), AF_INET6,
+                              sizeof(ipv6_addr_t), 0x0,
                               dodag->parents->addr.u8, sizeof(ipv6_addr_t),
-                              AF_INET6, (dodag->default_lifetime *
+                              FIB_FLAG_RPL_ROUTE, (dodag->default_lifetime *
                                          dodag->lifetime_unit) * SEC_IN_MS) != 0) {
                 DEBUG("RPL: error adding parent to FIB\n");
                 gnrc_rpl_parent_remove(*parent);
@@ -348,9 +355,9 @@ void gnrc_rpl_parent_update(gnrc_rpl_dodag_t *dodag, gnrc_rpl_parent_t *parent)
             kernel_pid_t if_id;
             if ((if_id = gnrc_ipv6_netif_find_by_addr(NULL, &all_RPL_nodes)) != KERNEL_PID_UNDEF) {
                 fib_add_entry(&gnrc_ipv6_fib_table, if_id, def.u8,
-                              sizeof(ipv6_addr_t), AF_INET6,
+                              sizeof(ipv6_addr_t), 0x0,
                               dodag->parents->addr.u8, sizeof(ipv6_addr_t),
-                              AF_INET6, (dodag->default_lifetime *
+                              FIB_FLAG_RPL_ROUTE, (dodag->default_lifetime *
                                          dodag->lifetime_unit) * SEC_IN_MS);
             }
         }
@@ -415,8 +422,8 @@ static gnrc_rpl_parent_t *_gnrc_rpl_find_preferred_parent(gnrc_rpl_dodag_t *doda
         }
 
         fib_add_entry(&gnrc_ipv6_fib_table, if_id, def.u8, sizeof(ipv6_addr_t),
-                      AF_INET6, dodag->parents->addr.u8, sizeof(ipv6_addr_t),
-                      AF_INET6, (dodag->default_lifetime *
+                      0x0, dodag->parents->addr.u8, sizeof(ipv6_addr_t),
+                      FIB_FLAG_RPL_ROUTE, (dodag->default_lifetime *
                                  dodag->lifetime_unit) * SEC_IN_MS);
     }
 
@@ -475,6 +482,19 @@ gnrc_rpl_dodag_t *gnrc_rpl_root_dodag_init(uint8_t instance_id, ipv6_addr_t *dod
     return dodag;
 }
 
+void gnrc_rpl_leaf_operation(gnrc_rpl_dodag_t *dodag)
+{
+    dodag->node_status = GNRC_RPL_LEAF_NODE;
+    /* send INFINITE_RANK DIO to current children */
+    gnrc_rpl_send_DIO(dodag, NULL);
+}
+
+void gnrc_rpl_router_operation(gnrc_rpl_dodag_t *dodag)
+{
+    dodag->node_status = GNRC_RPL_NORMAL_NODE;
+    /* announce presence to neighborhood */
+    trickle_reset_timer(&dodag->trickle);
+}
 /**
  * @}
  */

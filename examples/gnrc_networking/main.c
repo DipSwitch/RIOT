@@ -24,6 +24,10 @@
 #include "coap.h"
 
 #include "shell.h"
+#include "msg.h"
+
+#define MAIN_QUEUE_SIZE     (8)
+static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 extern int coap_main(coap_endpoint_request request);
 extern int udp_cmd(int argc, char **argv);
@@ -98,6 +102,10 @@ coap_responsecode_t create_response_payload(coap_method_t method, const char *na
 
 int main(void)
 {
+    /* we need a message queue for the thread running the shell in order to
+     * receive potentially fast incoming networking packets */
+    msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
+
     coap_main(create_response_payload);
 
     puts("RIOT network stack example application");

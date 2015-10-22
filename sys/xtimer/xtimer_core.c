@@ -120,13 +120,13 @@ void xtimer_set(xtimer_t *timer, uint32_t offset)
     }
 
     xtimer_remove(timer);
-    uint32_t target = xtimer_now() + offset;
 
     if (offset < XTIMER_BACKOFF) {
         xtimer_spin(offset);
         _shoot(timer);
     }
     else {
+        uint32_t target = xtimer_now() + offset;
         _xtimer_set_absolute(timer, target);
     }
 }
@@ -444,8 +444,8 @@ static void _timer_callback(void)
         /* we ended up in _timer_callback and there is
          * a timer waiting.
          */
-        /* set our period reference to that timer's target time. */
-        reference = _mask(timer_list_head->target);
+        /* set our period reference to the current time. */
+        reference = _xtimer_now();
     }
 
 overflow:
@@ -482,6 +482,11 @@ overflow:
     if (timer_list_head) {
         /* schedule callback on next timer target time */
         next_target = timer_list_head->target - XTIMER_OVERHEAD;
+
+        /* make sure we're not setting a time in the past */
+        if (next_target < (_xtimer_now() + XTIMER_ISR_BACKOFF)) {
+            goto overflow;
+        }
     }
     else {
         /* there's no timer planned for this timer period */
@@ -499,7 +504,7 @@ overflow:
             /* check if the end of this period is very soon */
             if (_mask(now + XTIMER_ISR_BACKOFF) < now) {
                 /* spin until next period, then advance */
-                while (_xtimer_now() > now);
+                while (_xtimer_now() >= now);
                 _next_period();
                 reference = 0;
                 goto overflow;

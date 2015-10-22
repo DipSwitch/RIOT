@@ -1,5 +1,8 @@
-ifneq (,$(filter pnet,$(USEMODULE)))
-    DIRS += posix/pnet
+ifneq (,$(filter posix_semaphore,$(USEMODULE)))
+    DIRS += posix/semaphore
+endif
+ifneq (,$(filter posix_sockets,$(USEMODULE)))
+    DIRS += posix/sockets
 endif
 ifneq (,$(filter pthread,$(USEMODULE)))
     DIRS += posix/pthread
@@ -67,6 +70,9 @@ endif
 
 ifneq (,$(filter netopt,$(USEMODULE)))
     DIRS += net/crosslayer/netopt
+endif
+ifneq (,$(filter sem,$(USEMODULE)))
+    DIRS += sem
 endif
 
 DIRS += $(dir $(wildcard $(addsuffix /Makefile, ${USEMODULE})))
