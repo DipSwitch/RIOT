@@ -62,10 +62,10 @@ extern "C" {
  * @{
  */
 #define AT86RF212B_SPI       SPI_1
-#define AT86RF212B_CS        GPIO(PORT_B,12) // SPI CS
-#define AT86RF212B_INT       GPIO(PORT_C,10) // IO3
-#define AT86RF212B_RESET     GPIO(PORT_C,7)  // IO0
-#define AT86RF212B_SLEEP     GPIO(PORT_C,9)  // IO2
+#define AT86RF212B_CS        GPIO_PIN(PORT_B,12) // SPI CS
+#define AT86RF212B_INT       GPIO_PIN(PORT_C,10) // IO3
+#define AT86RF212B_RESET     GPIO_PIN(PORT_C,7)  // IO0
+#define AT86RF212B_SLEEP     GPIO_PIN(PORT_C,9)  // IO2
 #define AT86RF212B_SPI_CLK   SPI_SPEED_5MHZ
 /** @} */
 
