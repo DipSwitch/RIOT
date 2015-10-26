@@ -39,12 +39,12 @@ extern "C" {
  * @name xtimer configuration
  * @{
  */
-#define XTIMER              TIMER_DEV(0)
-#define XTIMER_CHAN         (0)
+//#define XTIMER              TIMER_DEV(0)
+//#define XTIMER_CHAN         (0)
 #define XTIMER_OVERHEAD     (6)
-#define XTIMER_BACKOFF      (3)
+//#define XTIMER_BACKOFF      (3)
 #define XTIMER_SHOOT_EARLY  (3)
-#define XTIMER_MASK         (0xffff0000)
+//#define XTIMER_MASK         (0xffff0000)
 /** @} */
 
 /**
@@ -61,11 +61,11 @@ extern "C" {
  * @name Define the interface to the AT86RF212B radio
  * @{
  */
-#define AT86RF212B_SPI       SPI_1
-#define AT86RF212B_CS        GPIO_PIN(PORT_B,12) // SPI CS
-#define AT86RF212B_INT       GPIO_PIN(PORT_C,10) // IO3
-#define AT86RF212B_RESET     GPIO_PIN(PORT_C,7)  // IO0
-#define AT86RF212B_SLEEP     GPIO_PIN(PORT_C,9)  // IO2
+#define AT86RF212B_SPI       SPI_0
+#define AT86RF212B_CS        GPIO_PIN(PORT_C,8)
+#define AT86RF212B_INT       GPIO_PIN(PORT_C,7)
+#define AT86RF212B_RESET     GPIO_PIN(PORT_C,10)
+#define AT86RF212B_SLEEP     GPIO_PIN(PORT_C,11)
 #define AT86RF212B_SPI_CLK   SPI_SPEED_5MHZ
 /** @} */
 
@@ -73,7 +73,7 @@ extern "C" {
  * @name Define the interface for the connected flash memory
  * @{
  */
-#define EXTFLASH_SPI        SPI_1
+#define EXTFLASH_SPI        SPI_0
 #define EXTFLASH_CS         GPIO_PIN(PORT_A,11)
 #define EXTFLASH_WRITE      GPIO_PIN(PORT_C,6)
 #define EXTFLASH_HOLD       GPIO_PIN(PORT_C,9)

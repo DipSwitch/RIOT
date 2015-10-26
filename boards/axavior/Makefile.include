@@ -7,7 +7,7 @@ PORT_LINUX ?= /dev/ttyUSB1
 PORT_DARWIN ?= $(shell ls -1 /dev/tty.usbserial* | head -n 1)
 
 # setup serial terminal
-export BAUD = 500000
+export BAUD = 115200
 include $(RIOTBOARD)/Makefile.include.serial
 
 # this board uses openocd

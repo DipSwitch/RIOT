@@ -19,8 +19,6 @@
 #ifndef PERIPH_CONF_H_
 #define PERIPH_CONF_H_
 
-#include "periph_cpu.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,7 +45,7 @@ extern "C" {
  * @brief Timer configuration
  * @{
  */
-#define TIMER_NUMOF         (2U)
+#define TIMER_NUMOF         (1U)
 #define TIMER_0_EN          1
 
 /* Timer 1 configuration */
@@ -69,14 +67,14 @@ extern "C" {
  * @brief UART configuration
  * @{
  */
-#define UART_NUMOF          (1U)
+#define UART_NUMOF          (2U)
 #define UART_0_EN           1
-#define UART_1_EN           0
+#define UART_1_EN           1
 #define UART_IRQ_PRIO       1
 
 /* UART 0 device configuration */
 #define UART_0_DEV          USART3
-#define UART_0_CLKEN()      (RCC->APB2ENR |= RCC_APB1ENR_USART3EN)
+#define UART_0_CLKEN()      (RCC->APB1ENR |= RCC_APB1ENR_USART3EN)
 #define UART_0_IRQ          USART3_IRQn
 #define UART_0_ISR          isr_usart3
 #define UART_0_BUS_FREQ     36000000
@@ -86,7 +84,7 @@ extern "C" {
 
 /* UART 1 device configuration */
 #define UART_1_DEV          USART1
-#define UART_1_CLKEN()      (RCC->APB1ENR |= RCC_APB2ENR_USART1EN)
+#define UART_1_CLKEN()      (RCC->APB2ENR |= RCC_APB2ENR_USART1EN)
 #define UART_1_IRQ          USART1_IRQn
 #define UART_1_ISR          isr_usart1
 #define UART_1_BUS_FREQ     36000000
@@ -104,8 +102,8 @@ extern "C" {
 
 /* SPI 0 device configuration */
 #define SPI_0_DEV           SPI2
-#define SPI_0_CLKEN()       (RCC->APB2ENR |= RCC_APB2ENR_SPI2EN)
-#define SPI_0_CLKDIS()      (RCC->APB2ENR &= ~(RCC_APB2ENR_SPI2EN))
+#define SPI_0_CLKEN()       (RCC->APB1ENR |= RCC_APB1ENR_SPI2EN)
+#define SPI_0_CLKDIS()      (RCC->APB1ENR &= ~(RCC_APB1ENR_SPI2EN))
 #define SPI_0_BUS_DIV       1   /* 1 -> SPI runs with full CPU clock, 0 -> half CPU clock */
 /* SPI 0 pin configuration */
 #define SPI_0_CLK_PIN       GPIO_PIN(PORT_B,13)
