@@ -600,12 +600,13 @@ tftp_state _tftp_state_processes(tftp_context_t *ctxt, msg_t *m)
 
     gnrc_pktsnip_t *pkt = (gnrc_pktsnip_t *)(m->content.ptr);
 
-    assert(pkt->next && pkt->next->type == GNRC_NETTYPE_UDP);
-    assert(pkt->next->next && pkt->next->next->type == GNRC_NETTYPE_IPV6);
+    gnrc_pktsnip_t *tmp;
+    LL_SEARCH_SCALAR(pkt, tmp, type, GNRC_NETTYPE_UDP);
+    udp_hdr_t *udp = (udp_hdr_t *)tmp->data;
 
+    LL_SEARCH_SCALAR(pkt, tmp, type, GNRC_NETTYPE_IPV6);
+    ipv6_hdr_t *ip = (ipv6_hdr_t *)tmp->data;
     uint8_t *data = (uint8_t *)pkt->data;
-    udp_hdr_t *udp = (udp_hdr_t *)pkt->next->data;
-    ipv6_hdr_t *ip = (ipv6_hdr_t *)pkt->next->next->data;
 
     xtimer_remove(&(ctxt->timer));
 
