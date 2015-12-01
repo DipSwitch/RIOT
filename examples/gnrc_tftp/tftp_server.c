@@ -125,7 +125,7 @@ static void _tftp_server_stop_cb(tftp_event_t event, const char *msg)
     }
 
     /* print the transfer result to the console */
-    printf("tftp_server: %s: %s\n", cause, msg);
+    printf("tftp_server: %s: %s\n", cause, (msg == NULL) ? "NULL" : msg);
 }
 
 /**
