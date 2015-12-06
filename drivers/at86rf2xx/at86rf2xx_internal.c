@@ -138,19 +138,10 @@ void at86rf2xx_hardware_reset(at86rf2xx_t *dev)
 
 void at86rf2xx_configure_phy(at86rf2xx_t *dev)
 {
-    /* make sure device is not sleeping */
-    at86rf2xx_assert_awake(dev);
-
-    uint8_t state;
-
-    /* make sure ongoing transmissions are finished */
-    do {
-        state = at86rf2xx_get_status(dev);
-    }
-    while ((state == AT86RF2XX_STATE_BUSY_TX_ARET) || (state == AT86RF2XX_STATE_BUSY_RX_AACK));
+    uint8_t state = at86rf2xx_get_status(dev);
 
     /* we must be in TRX_OFF before changing the PHY configuration */
-    at86rf2xx_force_trx_off(dev);
+    at86rf2xx_set_state(dev, AT86RF2XX_STATE_TRX_OFF);
 
     uint8_t phy_cc_cca = at86rf2xx_reg_read(dev, AT86RF2XX_REG__PHY_CC_CCA);
 
@@ -201,12 +192,4 @@ void at86rf2xx_configure_phy(at86rf2xx_t *dev)
 
     /* Return to the state we had before reconfiguring */
     at86rf2xx_set_state(dev, state);
-}
-
-void at86rf2xx_force_trx_off(const at86rf2xx_t *dev)
-{
-    at86rf2xx_reg_write(dev,
-                        AT86RF2XX_REG__TRX_STATE,
-                        AT86RF2XX_TRX_STATE__FORCE_TRX_OFF);
-    while (at86rf2xx_get_status(dev) != AT86RF2XX_STATE_TRX_OFF);
 }

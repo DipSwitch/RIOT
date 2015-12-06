@@ -427,6 +427,11 @@ void at86rf2xx_set_state(at86rf2xx_t *dev, uint8_t state)
     if (state == old_state) {
         return;
     }
+
+    if (state == AT86RF2XX_STATE_FORCE_TRX_OFF) {
+        _set_state(dev, state);
+        return;
+    }
     /* make sure there is no ongoing transmission, or state transition already
      * in progress */
     while (old_state == AT86RF2XX_STATE_BUSY_RX_AACK ||
@@ -450,7 +455,7 @@ void at86rf2xx_set_state(at86rf2xx_t *dev, uint8_t state)
 
     if (state == AT86RF2XX_STATE_SLEEP) {
         /* First go to TRX_OFF */
-        at86rf2xx_force_trx_off(dev);
+        at86rf2xx_set_state(dev, AT86RF2XX_STATE_FORCE_TRX_OFF);
         /* Discard all IRQ flags, framebuffer is lost anyway */
         at86rf2xx_reg_read(dev, AT86RF2XX_REG__IRQ_STATUS);
         /* Go to SLEEP mode from TRX_OFF */
@@ -472,5 +477,5 @@ void at86rf2xx_reset_state_machine(at86rf2xx_t *dev)
         old_state = at86rf2xx_get_status(dev);
     } while (old_state == AT86RF2XX_STATE_IN_PROGRESS);
 
-    at86rf2xx_force_trx_off(dev);
+    at86rf2xx_set_state(dev, AT86RF2XX_STATE_FORCE_TRX_OFF);
 }
