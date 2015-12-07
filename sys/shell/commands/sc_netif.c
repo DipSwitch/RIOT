@@ -225,10 +225,10 @@ static void _netif_list(kernel_pid_t dev)
         printf(" Channel: %" PRIu16 " ", u16);
     }
 
-    res = gnrc_netapi_get(dev, NETOPT_CHANNEL_PAGE, 0, &u16, sizeof(u16));
+    res = gnrc_netapi_get(dev, NETOPT_CHANNEL_PAGE, 0, &u8, sizeof(u8));
 
     if (res >= 0) {
-        printf(" Page: %" PRIu16 " ", u16);
+        printf(" Page: %" PRIu8 " ", u8);
     }
 
     res = gnrc_netapi_get(dev, NETOPT_NID, 0, &u16, sizeof(u16));
@@ -571,7 +571,7 @@ static int _netif_set(char *cmd_name, kernel_pid_t dev, char *key, char *value)
         return _netif_set_u16(dev, NETOPT_CHANNEL, value);
     }
     else if (strcmp("page", key) == 0) {
-        return _netif_set_u16(dev, NETOPT_CHANNEL_PAGE, value);
+        return _netif_set_u8(dev, NETOPT_CHANNEL_PAGE, value);
     }
     else if ((strcmp("nid", key) == 0) || (strcmp("pan", key) == 0) ||
              (strcmp("pan_id", key) == 0)) {

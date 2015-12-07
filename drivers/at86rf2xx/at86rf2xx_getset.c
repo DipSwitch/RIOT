@@ -413,9 +413,11 @@ void at86rf2xx_set_option(at86rf2xx_t *dev, uint16_t option, bool state)
     }
 }
 
-static inline void _set_state(at86rf2xx_t *dev, uint8_t state)
+#define _set_state(dev, state)        _set_state_ex(dev, state, state)
+
+static inline void _set_state_ex(at86rf2xx_t *dev, uint8_t cmd, uint8_t state)
 {
-    at86rf2xx_reg_write(dev, AT86RF2XX_REG__TRX_STATE, state);
+    at86rf2xx_reg_write(dev, AT86RF2XX_REG__TRX_STATE, cmd);
     while (at86rf2xx_get_status(dev) != state);
     dev->state = state;
 }
@@ -429,7 +431,7 @@ void at86rf2xx_set_state(at86rf2xx_t *dev, uint8_t state)
     }
 
     if (state == AT86RF2XX_STATE_FORCE_TRX_OFF) {
-        _set_state(dev, state);
+        _set_state_ex(dev, state, AT86RF2XX_STATE_TRX_OFF);
         return;
     }
     /* make sure there is no ongoing transmission, or state transition already
