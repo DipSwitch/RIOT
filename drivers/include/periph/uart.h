@@ -108,6 +108,8 @@ typedef void(*uart_rx_cb_t)(void *arg, uint8_t data);
 typedef struct {
     uart_rx_cb_t rx_cb;     /**< data received interrupt callback */
     void *arg;              /**< argument to both callback routines */
+    uint8_t *data;
+    size_t left;
 } uart_isr_ctx_t;
 #endif
 /** @} */

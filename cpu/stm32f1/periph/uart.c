@@ -94,9 +94,18 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
 
 void uart_write(uart_t uart, const uint8_t *data, size_t len)
 {
-    for (size_t i = 0; i < len; i++) {
-        while(!(dev(uart)->SR & USART_SR_TXE)) {}
-        dev(uart)->DR = data[i];
+    /* lock write for other threads */
+    while((dev(uart)->CR1 & USART_CR1_TXEIE)) {
+        cpu_sleep_until_event();
+    }
+
+    isr_ctx[uart]->data = data;
+    isr_ctx[uart]->left = len;
+    dev(uart)->CR1 |= USART_CR1_TXEIE;
+
+    /* wait till finished */
+    while((dev(uart)->CR1 & USART_CR1_TXEIE)) {
+        cpu_sleep_until_event();
     }
 }
 
@@ -104,6 +113,12 @@ static inline void irq_handler(uart_t uart)
 {
     uint32_t status = dev(uart)->SR;
 
+    if (status & USART_SR_TXE) {
+        if (isr_ctx[uart].left--)
+            dev(uart)->DR = *(isr_ctx[uart].data)++;
+        else
+            dev(uart)->CR1 &= ~(USART_CR1_TXEIE);
+    }
     if (status & USART_SR_RXNE) {
         char data = (char)dev(uart)->DR;
         isr_ctx[uart].rx_cb(isr_ctx[uart].arg, data);
