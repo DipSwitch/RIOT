@@ -131,21 +131,39 @@ enum {
      * response. This means most probably, that there is no slave with the used
      * address on the bus, or the slave did just not respond for some reason.
      */
-    I2C_ADDR_NACK = -1
+    I2C_ADDR_NACK = -1,
     /**
      * @brief   NACK while writing data bytes
      *
      * The slave responded to a data byte written to it with a NACK.
      */
-    I2C_DATA_NACK = -2       /**< data error */
+    I2C_DATA_NACK = -2,      /**< data error */
      /**
       * @brief   Internal error
       *
       * This status code is returned, on any other internal error that might
       * have occurred.
       */
-    I2C_ERR = -3;
+    I2C_ERR = -3
 };
+
+typedef enum {
+    /**
+     * @brief       The I2C transfers need 10bit addressing
+     */
+    I2C_10BIT_ADDR  = (1 << 0),
+
+    /**
+     * @brief       The I2C transfers have 16bit addressing
+     */
+    I2C_16BIT_REG   = (1 << 1),
+
+    /**
+     * @brief       Instead of a restart, use an explicit STOP and START
+     *              between the address / register write and read opperation
+     */
+    I2C_STOP_START  = (1 << 2),
+} i2c_flags_t;
 
 /**
  * @brief   Initialize the given I2C bus
@@ -167,10 +185,11 @@ int i2c_init(i2c_t dev);
  * free again.
  *
  * @param[in] dev           I2C device to access
+ * @param[in] flags         Changes the defaults of the I2C interface
  *
  * @return                  0 on success
  */
-int i2c_acquire(i2c_t dev);
+int i2c_acquire(i2c_t dev, i2c_flags_t flags);
 
 /**
  * @brief   Release the given I2C device to be used by others
@@ -191,7 +210,7 @@ void i2c_release(i2c_t dev);
  * @return                  I2C_ADDR_NACK if response to address byte was NACK
  * @return                  I2C_ERR for any other error
  */
-int i2c_read(i2c_t dev, uint8_t addr, uint8_t *data, size_t len);
+int i2c_read(i2c_t dev, uint16_t addr, uint8_t *data, size_t len);
 
 /**
  * @brief   Read data from a specified register
@@ -207,7 +226,7 @@ int i2c_read(i2c_t dev, uint8_t addr, uint8_t *data, size_t len);
  * @return                  I2C_ADDR_NACK if response to address byte was NACK
  * @return                  I2C_ERR for any other error
  */
-int i2c_read_reg(i2c_t dev, uint8_t addr, uint8_t reg,
+int i2c_read_reg(i2c_t dev, uint16_t addr, uint16_t reg,
                  uint8_t *data, size_t len);
 
 /**
@@ -222,7 +241,7 @@ int i2c_read_reg(i2c_t dev, uint8_t addr, uint8_t reg,
  * @return                  I2C_DATA_NACK if response to the data byte was NACK
  * @return                  I2C_ERR for any other error
  */
-int i2c_write_byte(i2c_t dev, uint8_t addr, uint8_t data);
+int i2c_write_byte(i2c_t dev, uint16_t addr, uint8_t data);
 
 /**
  * @brief   Write multiple bytes to an I2C device with the given address
@@ -237,7 +256,7 @@ int i2c_write_byte(i2c_t dev, uint8_t addr, uint8_t data);
  * @return                  I2C_DATA_NACK if response to any data byte was NACK
  * @return                  I2C_ERR for any other error
  */
-int i2c_write_bytes(i2c_t dev, uint8_t addr, uint8_t *data, size_t len);
+int i2c_write_bytes(i2c_t dev, uint16_t addr, uint8_t *data, size_t len);
 
 /**
  * @brief   Write one byte to a register at the I2C slave with the given address
@@ -253,7 +272,7 @@ int i2c_write_bytes(i2c_t dev, uint8_t addr, uint8_t *data, size_t len);
  *                          byte was NACK
  * @return                  I2C_ERR for any other error
  */
-int i2c_write_reg(i2c_t dev, uint8_t addr, uint8_t reg, uint8_t data);
+int i2c_write_reg(i2c_t dev, uint16_t addr, uint16_t reg, uint8_t data);
 
 /**
  * @brief   Write multiple bytes to a register at the I2C slave with the given
@@ -272,7 +291,7 @@ int i2c_write_reg(i2c_t dev, uint8_t addr, uint8_t reg, uint8_t data);
  *                          byte was NACK
  * @return                  I2C_ERR for any other error
  */
-int i2c_write_regs(i2c_t dev, uint8_t addr, uint8_t reg,
+int i2c_write_regs(i2c_t dev, uint16_t addr, uint16_t reg,
                    uint8_t *data, size_t len);
 
 #ifdef __cplusplus
